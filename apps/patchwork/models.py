@@ -178,12 +178,6 @@ class PatchMbox(MIMENonMultipart):
         encode_7or8bit(self)
 
 class Patch(models.Model):
-    """
-        This class represents the patchwork_patch table in the patchwork database.  
-        The attributes of this class are corresponding to the fields in 
-        the patchwork_patch table.
-    """
-    
     project = models.ForeignKey(Project)
     msgid = models.CharField(max_length=255)
     name = models.CharField(max_length=255)
