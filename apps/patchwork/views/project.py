@@ -45,5 +45,9 @@ def project(request, project_id):
             archived = False, state = 4).count()
     context['n_resolved_patches'] = context['n_accepted_patches'] + \
                                     context['n_rejected_patches']
+    
+    context['n_reviewers'] = Person.objects.filter(comment__patch__project = project).distinct().count()
+    context['n_contributors'] = Person.objects.filter(patch__project = project).distinct().count()
+
 
     return render_to_response('patchwork/project.html', context)
