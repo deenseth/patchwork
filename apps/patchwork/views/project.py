@@ -35,5 +35,15 @@ def project(request, project_id):
             archived = False).count()
     context['n_archived_patches'] = Patch.objects.filter(project = project,
             archived = True).count()
+    context['n_new_patches'] = Patch.objects.filter(project = project,
+            archived = False, state = 1).count()
+    context['n_underreview_patches'] = Patch.objects.filter(project = project,
+            archived = False, state = 2).count()
+    context['n_accepted_patches'] = Patch.objects.filter(project = project,
+            archived = False, state = 3).count()
+    context['n_rejected_patches'] = Patch.objects.filter(project = project,
+            archived = False, state = 4).count()
+    context['n_resolved_patches'] = context['n_accepted_patches'] + \
+                                    context['n_rejected_patches']
 
     return render_to_response('patchwork/project.html', context)
