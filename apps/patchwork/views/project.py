@@ -33,6 +33,16 @@ def project(request, project_id):
             userprofile__maintainer_projects = project)
     context['n_patches'] = Patch.objects.filter(project = project,
             archived = False).count()
+
+    return render_to_response('patchwork/project.html', context)
+
+def analytics(request, project_id):
+    context = PatchworkRequestContext(request)
+    project = get_object_or_404(Project, linkname = project_id)
+    context.project = project
+
+    context['n_patches'] = Patch.objects.filter(project = project,
+            archived = False).count()
     context['n_archived_patches'] = Patch.objects.filter(project = project,
             archived = True).count()
     context['n_new_patches'] = Patch.objects.filter(project = project,
@@ -50,4 +60,4 @@ def project(request, project_id):
     context['n_contributors'] = Person.objects.filter(patch__project = project).distinct().count()
 
 
-    return render_to_response('patchwork/project.html', context)
+    return render_to_response('patchwork/analytics.html', context)
