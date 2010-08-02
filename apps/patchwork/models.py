@@ -396,4 +396,11 @@ class UserPersonConfirmation(models.Model):
             self.key = self._meta.get_field('key').construct(str).hexdigest()
         super(UserPersonConfirmation, self).save()
 
-
+class PatchMetrics(models.Model):
+    project = models.ForeignKey(Project)
+    patch = models.ForeignKey(Patch)
+    num_comments = models.IntegerField()
+    num_reviewers = models.IntegerField()
+    creation_date = models.DateTimeField()
+    last_modified_date = models.DateTimeField(default=datetime.datetime.now)
+    
