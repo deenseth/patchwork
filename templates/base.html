@@ -49,7 +49,7 @@
      <a href="{% url patchwork.views.project.project project_id=project.linkname %}"
       >project info</a>
      :
-     <a href="{% url patchwork.views.project.analytics project_id=project.linkname %}"
+     <a href="{% url patchwork.views.analytics.dashboard project_id=project.linkname %}"
       >analytics</a>
     {% if other_projects %}
      :
