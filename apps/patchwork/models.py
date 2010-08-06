@@ -399,8 +399,11 @@ class UserPersonConfirmation(models.Model):
 class PatchMetrics(models.Model):
     project = models.ForeignKey(Project)
     patch = models.ForeignKey(Patch)
-    num_comments = models.IntegerField()
-    num_reviewers = models.IntegerField()
     creation_date = models.DateTimeField()
     last_modified_date = models.DateTimeField(default=datetime.datetime.now)
+    num_comments = models.IntegerField(default=0)
+    num_reviewers = models.IntegerField(default=0)
+    response_time = models.IntegerField(default=0)
+    inactivity_time = models.IntegerField(default=0)
+
     

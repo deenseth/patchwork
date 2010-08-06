@@ -18,25 +18,58 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 from patchwork.models import Patch, PatchMetrics, Project, Person, Comment
-import datetime
+from datetime import datetime
 
-def UpdatePatchMetrics(patch):
+class PatchMetricsCollector(object):
 
-    try: 
-        patchmetrics = PatchMetrics.objects.get(patch=patch.id)
+    def __init__(self, patch):
+
+        self.lead_time = 0
+        self.closed_time = 0
+        self.num_comments = 0
+        self.num_closed = 0
+
+        self.__collect_history_data(patch)
+
+    def __inseconds(self, duration):
+        # convert timedelta object to interger value in seconds
+        return duration.days*24*3600 + duration.seconds
+
+    def __collect_history_data(self, patch):
+
+        self.patch = patch
+        self.creation_date = patch.date
         
-    except PatchMetrics.DoesNotExist:
-        patchmetrics = PatchMetrics()
+        comments = Comment.objects.filter(patch=patch).order_by('date')
+        self.num_comments = comments.count()
+        self.num_reviewers = Person.objects.filter(comment__patch__project = patch.project, patch=patch).distinct().count()
+        self.response_time = self.__inseconds(comments[1].date - comments[0].date)
+        self.inactivity_time = self.__inseconds(datetime.now() - comments.reverse()[0].date)     
+
+    def get_all_metrics(self):
+        return {'num_comments':self.num_comments,
+                'num_reviewers':self.num_reviewers,
+                'response_time':self.response_time,
+                'inactivity_time':self.inactivity_time}
+
+    def save_to_db(self):
+        try:
+            patchmetrics = PatchMetrics.objects.get(patch=self.patch.id)
         
-    # Update PatchMetrics fields
-    patchmetrics.project = patch.project    
-    patchmetrics.patch = patch
-    patchmetrics.num_comments = Comment.objects.filter(patch=patch).count()
-    patchmetrics.num_reviewers = Comment.objects.filter(patch=patch).distinct().count()
-    patchmetrics.creation_date = patch.date
-    patchmetrics.last_modified_date = datetime.datetime.now()
-    
-    try:
-        patchmetrics.save()
-    except Exception, ex:
-        print str(ex)
+        except PatchMetrics.DoesNotExist:
+            patchmetrics = PatchMetrics()
+
+        # Update PatchMetrics fields
+        patchmetrics.project = self.patch.project
+        patchmetrics.patch = self.patch
+        patchmetrics.creation_date = self.creation_date
+        patchmetrics.last_modified_date = datetime.now()
+        patchmetrics.num_comments = self.num_comments
+        patchmetrics.num_reviewers = self.num_reviewers
+        patchmetrics.response_time = self.response_time
+        patchmetrics.inactivity_time = self.inactivity_time
+
+        try:
+            patchmetrics.save()
+        except Exception, ex:
+            print str(ex)

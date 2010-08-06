@@ -32,7 +32,7 @@ from django.contrib.auth import authenticate, login
 import django.core.urlresolvers
 from patchwork.paginator import Paginator
 from patchwork.views import generic_list
-from patchwork.metrics import UpdatePatchMetrics
+from patchwork.metrics import PatchMetricsCollector
 
 def patch(request, patch_id):
     context = PatchworkRequestContext(request)
@@ -42,8 +42,10 @@ def patch(request, patch_id):
     messages = []
     
     # collect and update metrics for this patch
-    UpdatePatchMetrics(patch)
-
+    #UpdatePatchMetrics(patch)
+    pmc = PatchMetricsCollector(patch)
+    pmc.save_to_db()
+    
     form = None
     createbundleform = None
 
