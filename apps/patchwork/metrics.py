@@ -30,6 +30,7 @@ class PatchMetricsCollector(object):
         self.num_closed = 0
 
         self.__collect_history_data(patch)
+        self.save_to_db()
 
     def __inseconds(self, duration):
         # convert timedelta object to interger value in seconds
@@ -42,8 +43,13 @@ class PatchMetricsCollector(object):
         
         comments = Comment.objects.filter(patch=patch).order_by('date')
         self.num_comments = comments.count()
-        self.num_reviewers = Person.objects.filter(comment__patch__project = patch.project, patch=patch).distinct().count()
-        self.response_time = self.__inseconds(comments[1].date - comments[0].date)
+        self.num_reviewers = Person.objects.filter(comment__patch=patch).distinct().count()
+
+        if (len(comments) > 1):
+            self.response_time = self.__inseconds(comments[1].date - comments[0].date)
+        else:
+            self.response_time = self.__inseconds(datetime.now() - comments[0].date)    
+
         self.inactivity_time = self.__inseconds(datetime.now() - comments.reverse()[0].date)     
 
     def get_all_metrics(self):
@@ -73,3 +79,95 @@ class PatchMetricsCollector(object):
             patchmetrics.save()
         except Exception, ex:
             print str(ex)
+
+class PatchGroupMetrics(object):
+
+    def __init__(self, patches):
+
+        self.patches = patches  #django QuerySet
+        self.num_patches = len(patches)
+
+        self.patches_metrics = [PatchMetricsCollector(patch) for patch in self.patches]
+
+    def get_num_comments_stats(self):
+
+        data = [patch_metrics.num_comments for patch_metrics in self.patches_metrics]
+        stats = DescriptiveStats(data)
+        return stats
+
+    def get_num_reviewers_stats(self):
+
+        data = [patch_metrics.num_reviewers for patch_metrics in self.patches_metrics]
+        stats = DescriptiveStats(data)
+        return stats
+
+    def get_frequency_metrics_stats(self):
+
+        return {"Number of comments per patch": self.get_num_comments_stats(),
+                "Number of reviewers per patch": self.get_num_reviewers_stats()}
+
+    def get_duration_metrics_stats(self):
+
+        return {"Response time": self.get_response_time_stats(),
+                "Inactivity time": self.get_inactivity_time_stats()}
+
+    def get_response_time_stats(self):
+
+        data = [patch_metrics.response_time for patch_metrics in self.patches_metrics]
+        stats = DescriptiveStats(data)
+        return stats
+
+    def get_inactivity_time_stats(self):
+        data = [patch_metrics.inactivity_time for patch_metrics in self.patches_metrics]
+        stats = DescriptiveStats(data)
+        return stats
+
+class DescriptiveStats(object):
+
+    def __init__(self, sequence):
+        # sequence of numbers we will process
+        # convert all items to floats for numerical processing
+        self.sequence = [float(item) for item in sequence]
+
+    def sum(self):
+        if len(self.sequence) < 1:
+            return None
+        else:
+            return sum(self.sequence)
+
+    def count(self):
+        return len(self.sequence)
+
+    def min(self):
+        if len(self.sequence) < 1:
+            return None
+        else:
+            return min(self.sequence)
+
+    def max(self):
+        if len(self.sequence) < 1:
+            return None
+        else:
+            return max(self.sequence)
+
+    def avg(self):
+        if len(self.sequence) < 1:
+            return None
+        else: 
+            return sum(self.sequence) / len(self.sequence)    
+
+    def median(self):
+        if len(self.sequence) < 1:
+            return None
+        else:
+            self.sequence.sort()
+            return self.sequence[len(self.sequence) // 2]
+
+    def stdev(self):
+        if len(self.sequence) < 1:
+            return None
+        else:
+            avg = self.avg()
+            sdsq = sum([(i - avg) ** 2 for i in self.sequence])
+            stdev = (sdsq / (len(self.sequence) - 1 or 1)) ** .5
+            return stdev

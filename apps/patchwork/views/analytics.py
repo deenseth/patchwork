@@ -23,6 +23,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from patchwork.requestcontext import PatchworkRequestContext
+from patchwork.metrics import PatchGroupMetrics
 
 def dashboard(request, project_id):
     context = PatchworkRequestContext(request)
@@ -43,10 +44,17 @@ def dashboard(request, project_id):
             archived = False, state = 4).count()
     context['n_resolved_patches'] = context['n_accepted_patches'] + \
                                     context['n_rejected_patches']
-    
+
     context['n_reviewers'] = Person.objects.filter(comment__patch__project = project).distinct().count()
     context['n_contributors'] = Person.objects.filter(patch__project = project).distinct().count()
 
+    # Get list of patch for the current project
+    patches = Patch.objects.filter(project=project)
+
+    # Populate group metrics statistics
+    patch_group_metrics = PatchGroupMetrics(patches)
+
+    context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
+    context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
+
     return render_to_response('patchwork/analytics.html', context)
-
-
