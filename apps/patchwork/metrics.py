@@ -20,7 +20,7 @@
 from patchwork.models import Patch, PatchMetrics, Project, Person, Comment
 from datetime import datetime
 
-class PatchMetricsCollector(object):
+class PatchInfo(object):
 
     def __init__(self, patch):
 
@@ -30,7 +30,7 @@ class PatchMetricsCollector(object):
         self.num_closed = 0
 
         self.__collect_history_data(patch)
-        self.save_to_db()
+        self.save_metrics_to_db()
 
     def __inseconds(self, duration):
         # convert timedelta object to interger value in seconds
@@ -58,7 +58,7 @@ class PatchMetricsCollector(object):
                 'response_time':self.response_time,
                 'inactivity_time':self.inactivity_time}
 
-    def save_to_db(self):
+    def save_metrics_to_db(self):
         try:
             patchmetrics = PatchMetrics.objects.get(patch=self.patch.id)
         
@@ -87,17 +87,17 @@ class PatchGroupMetrics(object):
         self.patches = patches  #django QuerySet
         self.num_patches = len(patches)
 
-        self.patches_metrics = [PatchMetricsCollector(patch) for patch in self.patches]
+        self.patches_info = [PatchInfo(patch) for patch in self.patches]
 
     def get_num_comments_stats(self):
 
-        data = [patch_metrics.num_comments for patch_metrics in self.patches_metrics]
+        data = [patch_info.num_comments for patch_info in self.patches_info]
         stats = DescriptiveStats(data)
         return stats
 
     def get_num_reviewers_stats(self):
 
-        data = [patch_metrics.num_reviewers for patch_metrics in self.patches_metrics]
+        data = [patch_info.num_reviewers for patch_info in self.patches_info]
         stats = DescriptiveStats(data)
         return stats
 
@@ -113,12 +113,12 @@ class PatchGroupMetrics(object):
 
     def get_response_time_stats(self):
 
-        data = [patch_metrics.response_time for patch_metrics in self.patches_metrics]
+        data = [patch_info.response_time for patch_info in self.patches_info]
         stats = DescriptiveStats(data)
         return stats
 
     def get_inactivity_time_stats(self):
-        data = [patch_metrics.inactivity_time for patch_metrics in self.patches_metrics]
+        data = [patch_info.inactivity_time for patch_info in self.patches_info]
         stats = DescriptiveStats(data)
         return stats
 
