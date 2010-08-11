@@ -24,6 +24,10 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from patchwork.requestcontext import PatchworkRequestContext
 from patchwork.metrics import PatchGroupMetrics
+from datetime import datetime, timedelta
+
+# Constants
+DAYS_BACK = 28
 
 def dashboard(request, project_id):
     context = PatchworkRequestContext(request)
@@ -54,7 +58,17 @@ def dashboard(request, project_id):
     # Populate group metrics statistics
     patch_group_metrics = PatchGroupMetrics(patches)
 
-    context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
-    context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
+    #context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
+    #context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
+
+    today = datetime.now()
+    # get daily backlog history
+#    last_day = datetime(today.year, today.month, today.day)
+    last_day = datetime(2010, 5, 31)
+    first_day = last_day - timedelta(days=DAYS_BACK)
+
+    backlog_history = patch_group_metrics.get_daily_backlog_history(first_day, last_day)
+    context['ds_daily_backlog'] = patch_group_metrics.get_daily_backlog_chart(backlog_history)
+
 
     return render_to_response('patchwork/analytics.html', context)

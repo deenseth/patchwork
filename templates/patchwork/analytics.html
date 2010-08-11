@@ -1,8 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}{{ project.name }}{% endblock %}
-{% block heading %}{{ project.name }}{% endblock %}
+{% block headers %}
+<!-- Dependencies -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/element/element-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/datasource/datasource-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/json/json-min.js"></script>
+<!-- OPTIONAL: Connection (enables XHR) -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/connection/connection-min.js"></script>
+<!-- Source files -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/charts/charts-min.js"></script>
+<script type="text/javascript">YAHOO.widget.Chart.SWFURL = "http://yui.yahooapis.com/2.7.0/build/charts/assets/charts.swf"; </script>
+{% endblock %}
 
+{% block heading %}{{ project.name }}{% endblock %}
 {% block body %}
 
 <table class="horizontal">
@@ -71,6 +83,29 @@
     </tbody>
   </table>
 </div>
+
+<h2>Daily Backlog</h2>
+<div id="daily_backlog" style="width: 640px; height: 480px;"></div>
+
+  <script type = "text/javascript">
+  //--- data
+  var tickethistory = {{ds_daily_backlog|safe}}
+
+  var ds = new YAHOO.util.DataSource(tickethistory);
+  ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+  ds.responseSchema = { fields: [ "date", "opened", "closed", "created" ] };
+
+    var seriesDef =
+    [
+      { type: "line", displayName: "Opened Tickets", yField: "opened", style: { color: 0x0000FF }},
+      { displayName: "Closed Tickets", yField: "closed", style: { color: 0xbae0ba }},
+      { displayName: "New Tickets", yField: "created", style: { color: 0x9966ff }}
+    ];
+
+  //--- chart
+  var mychart = new YAHOO.widget.StackedColumnChart( "daily_backlog", ds,
+               { xField: "date", series: seriesDef, style: {legend: {display: "bottom"}, xAxis: {labelRotation: -60}}});
+</script>
 
 {% if settings.ENABLE_XMLRPC %}
 <p>Sample <a href="{% url patchwork.views.help "pwclient/" %}">patchwork
