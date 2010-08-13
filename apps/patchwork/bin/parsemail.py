@@ -34,7 +34,7 @@ except ImportError:
     from email.Utils import parsedate_tz, mktime_tz
 
 from patchwork.parser import parse_patch
-from patchwork.models import Patch, Project, Person, Comment
+from patchwork.models import Patch, Project, Person, Comment, State
 
 list_id_headers = ['List-ID', 'X-Mailing-List']
 
@@ -378,6 +378,20 @@ def parse_mail(mail):
             comment.save()
         except Exception, ex:
             print str(ex)
+
+        # Automatically update patch state when other people comment the patch
+        tpatch = comment.patch
+        if (tpatch.submitter != comment.submitter and tpatch.state.action_required == True):
+
+            # Assume that patch that has Reviewed-by is accepted
+            if (comment.patch_responses().rfind('Reviewed-by') == 0):
+                tpatch.state = State.objects.get(id = 3) # Accepted
+            else:
+                tpatch.state = State.objects.get(id = 2) # Under Review
+            try:
+                tpatch.save()
+            except Exception, ex:
+                print str(ex)
 
     return 0
 
