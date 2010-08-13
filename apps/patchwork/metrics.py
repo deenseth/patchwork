@@ -300,6 +300,34 @@ class PatchGroupMetrics(object):
                              closed_patches_dataset[idx], created_patches_dataset[idx])
         return '[ ' + ds_daily_backlog + ' ];'
 
+class PersonInfo(object):
+    def __init__(self, person):
+        self.person = person
+        self.num_submitted_patches = Patch.objects.filter(submitter=self.person).count()
+        self.num_reviewed_patches = Patch.objects.filter(comment__submitter=self.person).distinct().count() - self.num_submitted_patches
+        self.num_comments = Comment.objects.filter(submitter=self.person).count() - self.num_submitted_patches
+
+
+class PersonGroupMetrics(object):
+
+    def __init__(self, persons):
+
+        self.persons = persons  #django QuerySet
+        self.num_person = len(persons)
+        self.persons_info = [PersonInfo(person) for person in self.persons]
+
+    def get_contributors_chart(self):
+
+        contributors = sorted(self.persons_info, key=lambda x: x.num_submitted_patches, reverse=True)
+
+        ds_contributors_info = ''
+        for person_info in contributors:
+            ds_contributors_info = ds_contributors_info + '{ contributor: "%s", patches: %d, reviews: %d, comments: %d}, ' \
+                              % (person_info.person.name, person_info.num_submitted_patches, \
+                                 person_info.num_reviewed_patches, person_info.num_comments)
+
+        return '[ ' + ds_contributors_info + ' ];'
+
 class DescriptiveStats(object):
 
     def __init__(self, sequence):

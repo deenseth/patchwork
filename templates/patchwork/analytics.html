@@ -107,6 +107,30 @@
                { xField: "date", series: seriesDef, style: {legend: {display: "bottom"}, xAxis: {labelRotation: -60}}});
 </script>
 
+<h2>Contributors</h2>
+<div id="contributors_patchs" style="width: 1024px; height: 768px;"></div>
+
+  <script type = "text/javascript">
+  //--- data
+  var contributors = {{ds_contributor_info|safe}}
+
+  var ds = new YAHOO.util.DataSource(contributors);
+  ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+  ds.responseSchema = { fields: [ "contributor", "patches", "reviews", "comments" ] };
+
+    var seriesDef =
+    [
+      { displayName: "Submitted Patches", yField: "patches", style: { color: 0xbae0ba }},
+      { displayName: "Reviewed Patches", yField: "reviews", style: { color: 0x9966ff }},
+      { displayName: "Comments", yField: "comments", style: { color: 0x996666 }}
+    ];
+
+  //--- chart
+  var mychart = new YAHOO.widget.ColumnChart( "contributors_patchs", ds,
+               { xField: "contributor", series: seriesDef, style: {legend: {display: "bottom"}, xAxis: {labelRotation: -90}}});
+</script>
+
+
 {% if settings.ENABLE_XMLRPC %}
 <p>Sample <a href="{% url patchwork.views.help "pwclient/" %}">patchwork
 client</a> configuration for this project: <a

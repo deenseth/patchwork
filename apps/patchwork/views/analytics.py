@@ -23,7 +23,7 @@ from django.shortcuts import render_to_response, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from patchwork.requestcontext import PatchworkRequestContext
-from patchwork.metrics import PatchGroupMetrics
+from patchwork.metrics import PatchGroupMetrics, PersonGroupMetrics
 from datetime import datetime, timedelta
 
 # Constants
@@ -58,17 +58,19 @@ def dashboard(request, project_id):
     # Populate group metrics statistics
     patch_group_metrics = PatchGroupMetrics(patches)
 
-    #context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
-    #context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
+    context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
+    context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
 
     today = datetime.now()
     # get daily backlog history
-#    last_day = datetime(today.year, today.month, today.day)
-    last_day = datetime(2010, 5, 31)
+    last_day = datetime(today.year, today.month, today.day)
     first_day = last_day - timedelta(days=DAYS_BACK)
 
     backlog_history = patch_group_metrics.get_daily_backlog_history(first_day, last_day)
     context['ds_daily_backlog'] = patch_group_metrics.get_daily_backlog_chart(backlog_history)
 
+    #Contributors Chart
+    person_group_metrics = PersonGroupMetrics(Person.objects.filter(comment__patch__project=3).distinct())
+    context['ds_contributor_info'] = person_group_metrics.get_contributors_chart()
 
     return render_to_response('patchwork/analytics.html', context)
