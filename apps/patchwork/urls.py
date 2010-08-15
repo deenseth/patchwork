@@ -26,6 +26,7 @@ urlpatterns = patterns('',
     (r'^project/(?P<project_id>[^/]+)/list/$', 'patchwork.views.patch.list'),
     (r'^project/(?P<project_id>[^/]+)/$', 'patchwork.views.project.project'),
     (r'^project/(?P<project_id>[^/]+)/analytics/$', 'patchwork.views.analytics.dashboard'),
+    (r'^project/(?P<project_id>[^/]+)/analytics/contributors/$', 'patchwork.views.analytics.contributors'),
 
     # patch views
     (r'^patch/(?P<patch_id>\d+)/$', 'patchwork.views.patch.patch'),

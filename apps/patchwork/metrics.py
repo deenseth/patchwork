@@ -19,6 +19,7 @@
 
 from patchwork.models import Patch, PatchMetrics, Project, Person, Comment
 from datetime import datetime, timedelta
+from chardet.constants import True
 
 class PatchInfo(object):
 
@@ -323,10 +324,62 @@ class PersonGroupMetrics(object):
         ds_contributors_info = ''
         for person_info in contributors:
             ds_contributors_info = ds_contributors_info + '{ contributor: "%s", patches: %d, reviews: %d, comments: %d}, ' \
-                              % (person_info.person.name, person_info.num_submitted_patches, \
+                              % (smart_truncate(person_info.person.name), person_info.num_submitted_patches, \
                                  person_info.num_reviewed_patches, person_info.num_comments)
 
         return '[ ' + ds_contributors_info + ' ];'
+
+    def get_top_submitters(self, num):
+
+        contributors = sorted(self.persons_info, key=lambda x: x.num_submitted_patches, reverse=True)
+
+        ds_top_contributors = ''
+
+        for index, person_info in enumerate(contributors):
+            ds_top_contributors = ds_top_contributors + '{ contributor: "%s", patches: %d}, ' \
+                              % (smart_truncate(person_info.person.name), person_info.num_submitted_patches)
+
+            if index == num - 1:
+                break
+
+        return   '[ ' + ds_top_contributors + ' ];'
+
+    def get_top_reviewers(self, num):
+
+        contributors = sorted(self.persons_info, key=lambda x: x.num_reviewed_patches, reverse=True)
+
+        ds_top_contributors = ''
+
+        for index, person_info in enumerate(contributors):
+            ds_top_contributors = ds_top_contributors + '{ contributor: "%s", patches: %d}, ' \
+                              % (smart_truncate(person_info.person.name), person_info.num_reviewed_patches)
+
+            if index == num - 1:
+                break
+
+        return   '[ ' + ds_top_contributors + ' ];'
+
+    def get_top_commenters(self, num):
+
+        contributors = sorted(self.persons_info, key=lambda x: x.num_comments, reverse=True)
+
+        ds_top_contributors = ''
+
+        for index, person_info in enumerate(contributors):
+            ds_top_contributors = ds_top_contributors + '{ contributor: "%s", comments: %d}, ' \
+                              % (smart_truncate(person_info.person.name), person_info.num_comments)
+
+            if index == num - 1:
+                break
+
+        return   '[ ' + ds_top_contributors + ' ];'
+
+def smart_truncate(content, length=20, suffix='...'):
+
+    if content:
+        return (content if len(content) <= length else content[:length].rsplit(' ', 1)[0]+suffix)
+    else:
+        return 'N/A'
 
 class DescriptiveStats(object):
 

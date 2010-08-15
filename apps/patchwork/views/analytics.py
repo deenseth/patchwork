@@ -70,7 +70,26 @@ def dashboard(request, project_id):
     context['ds_daily_backlog'] = patch_group_metrics.get_daily_backlog_chart(backlog_history)
 
     #Contributors Chart
-    person_group_metrics = PersonGroupMetrics(Person.objects.filter(comment__patch__project=3).distinct())
+    person_group_metrics = PersonGroupMetrics(Person.objects.filter(comment__patch__project=project).distinct())
     context['ds_contributor_info'] = person_group_metrics.get_contributors_chart()
 
     return render_to_response('patchwork/analytics.html', context)
+
+
+def contributors(request, project_id):
+
+    context = PatchworkRequestContext(request)
+    project = get_object_or_404(Project, linkname = project_id)
+    context.project = project
+
+    #Contributors Chart
+    person_group_metrics = PersonGroupMetrics(Person.objects.filter(comment__patch__project=project).distinct())
+    context['ds_contributor_info'] = person_group_metrics.get_contributors_chart()
+
+
+    context['ds_top_submitters'] = person_group_metrics.get_top_submitters(20)
+    context['ds_top_reviewers'] = person_group_metrics.get_top_reviewers(20)
+    context['ds_top_commenters'] = person_group_metrics.get_top_commenters(20)
+
+    return render_to_response('patchwork/contributors.html', context)
+

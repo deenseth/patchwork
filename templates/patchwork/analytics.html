@@ -105,7 +105,8 @@
   //--- chart
   var mychart = new YAHOO.widget.StackedColumnChart( "daily_backlog", ds,
                { xField: "date", series: seriesDef, style: {legend: {display: "bottom"}, xAxis: {labelRotation: -60}}});
-</script>
+  </script>
+</div>
 
 <h2>Contributors</h2>
 <div id="contributors_patchs" style="width: 1024px; height: 768px;"></div>
@@ -128,8 +129,13 @@
   //--- chart
   var mychart = new YAHOO.widget.ColumnChart( "contributors_patchs", ds,
                { xField: "contributor", series: seriesDef, style: {legend: {display: "bottom"}, xAxis: {labelRotation: -90}}});
-</script>
+  </script>
+</div>
 
+<a href="{% url patchwork.views.help "pwclient/" %}">patchwork
+client</a>
+
+<a href="{% url patchwork.views.analytics.contributors project_id=project.linkname %}">Contributor Charts</a>
 
 {% if settings.ENABLE_XMLRPC %}
 <p>Sample <a href="{% url patchwork.views.help "pwclient/" %}">patchwork
