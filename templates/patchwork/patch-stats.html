@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}{{ project.name }}{% endblock %}
+{% block headers %}
+<!-- Dependencies -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/yahoo-dom-event/yahoo-dom-event.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/element/element-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/datasource/datasource-min.js"></script>
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/json/json-min.js"></script>
+<!-- OPTIONAL: Connection (enables XHR) -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/connection/connection-min.js"></script>
+<!-- Source files -->
+<script type="text/javascript" src="http://yui.yahooapis.com/2.7.0/build/charts/charts-min.js"></script>
+<script type="text/javascript">YAHOO.widget.Chart.SWFURL = "http://yui.yahooapis.com/2.7.0/build/charts/assets/charts.swf"; </script>
+{% endblock %}
+
+{% block heading %}{{ project.name }}{% endblock %}
+{% block body %}
+
+<div>
+  <h2>Patches Statistics:</h2>
+  <table style="width: 800px" class="horizontal">
+    <thead>
+      <tr>
+        <th style="width: 300px" class="style1">Metrics</th>
+        <th style="width: 150px">Mean</th>
+        <th style="width: 150px">Median</th>
+        <th style="width: 150px">Max</th>
+        <th style="width: 150px">Min</th>
+        <th style="width: 150px">Std. Dev.</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for metric, stats in patch_duration_stats.items %}
+      <tr class="statistics">
+        <th style="width: 300px" class="style1">{{metric}}</th>
+        <th style="width: 150px">{{stats.avg}}</th>
+        <th style="width: 150px">{{stats.median}}</th>
+        <th style="width: 150px">{{stats.max}}</th>
+        <th style="width: 150px">{{stats.min}}</th>
+        <th style="width: 150px">{{stats.stdev}}</th>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tbody>
+      {% for metric, stats in patch_frequency_stats.items %}
+      <tr class="statistics">
+        <th style="width: 300px" class="style1">{{metric}}</th>
+        <th style="width: 150px">{{stats.avg|floatformat}}</th>
+        <th style="width: 150px">{{stats.median|floatformat}}</th>
+        <th style="width: 150px">{{stats.max|floatformat}}</th>
+        <th style="width: 150px">{{stats.min|floatformat}}</th>
+        <th style="width: 150px">{{stats.stdev|floatformat}}</th>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2>Patches by Response Time</h2>
+<div id="patches_by_rt" style="width: 640px; height: 480px;"></div>
+
+  <script type = "text/javascript">
+  //--- data
+  var patches_by_rt = {{ds_patches_by_rt|safe}}
+
+  var ds = new YAHOO.util.DataSource(patches_by_rt);
+  ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+  ds.responseSchema = { fields: [ "time", "patches" ] };
+
+  //--- chart
+  var mychart = new YAHOO.widget.PieChart( "patches_by_rt", ds,
+  {
+      dataField: "patches",
+      categoryField: "time",
+      style: {legend: {display: "right"}},
+      series: [{}]
+  });
+
+  </script>
+</div>
+
+<h2>Patches by Inactivity Time</h2>
+<div id="patches_by_it" style="width: 640px; height: 480px;"></div>
+
+  <script type = "text/javascript">
+  //--- data
+  var patches_by_it = {{ds_patches_by_it|safe}}
+
+  var ds = new YAHOO.util.DataSource(patches_by_it);
+  ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+  ds.responseSchema = { fields: [ "time", "patches" ] };
+
+  //--- chart
+  var mychart = new YAHOO.widget.PieChart( "patches_by_it", ds,
+  {
+      dataField: "patches",
+      categoryField: "time",
+      style: {legend: {display: "right"}},
+      series: [{}]
+  });
+
+  </script>
+</div>
+
+{% if settings.ENABLE_XMLRPC %}
+<p>Sample <a href="{% url patchwork.views.help "pwclient/" %}">patchwork
+client</a> configuration for this project: <a
+href="{% url patchwork.views.pwclientrc project.linkname %}"
+>.pwclientrc</a>.</p>
+{% endif %}
+  
+{% endblock %}

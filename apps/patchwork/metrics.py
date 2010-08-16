@@ -45,7 +45,7 @@ class PatchInfo(object):
 
         
         comments = Comment.objects.filter(patch=patch).order_by('date')
-        self.num_comments = comments.count()
+        self.num_comments = comments.count() - 1
         self.num_reviewers = Person.objects.filter(comment__patch=patch).distinct().count()
 
         if (len(comments) > 1):
@@ -331,6 +331,66 @@ class PatchGroupMetrics(object):
 
         return '[ ' + ds_patches_info + ' ];'
 
+    def get_patches_by_response_time(self):
+
+        patches_by_rt = {'1 day':0, '1 week':0, '2 weeks':0, '4 weeks':0, '8 weeks':0, 'more than 8 weeks':0}
+
+        for patch_info in self.patches_info:
+
+            if (patch_info.response_time <= 86400):
+                patches_by_rt['1 day'] += 1
+                continue
+            if (patch_info.response_time <= 604800):
+                patches_by_rt['1 week'] += 1
+                continue
+            if (patch_info.response_time <= 1209600):
+                patches_by_rt['2 weeks'] += 1
+                continue
+            if (patch_info.response_time <= 2419200):
+                patches_by_rt['4 weeks'] += 1
+                continue
+            if (patch_info.response_time <= 4838400):
+                patches_by_rt['8 weeks'] += 1
+                continue
+            else:
+                patches_by_rt['more than 8 weeks'] += 1
+
+        ds_patches_info = ''
+        for time, patches in patches_by_rt.iteritems():
+            ds_patches_info = ds_patches_info + '{ time: "%s", patches: %d}, ' \
+                              % (time, patches)
+
+        return '[ ' + ds_patches_info + ' ];'
+
+    def get_patches_by_inactivity_time(self):
+        patches_by_it = {'1 day':0, '1 week':0, '2 weeks':0, '4 weeks':0, '8 weeks':0, 'more than 8 weeks':0}
+
+        for patch_info in self.patches_info:
+
+            if (patch_info.inactivity_time <= 86400):
+                patches_by_it['1 day'] += 1
+                continue
+            if (patch_info.inactivity_time <= 604800):
+                patches_by_it['1 week'] += 1
+                continue
+            if (patch_info.inactivity_time <= 1209600):
+                patches_by_it['2 weeks'] += 1
+                continue
+            if (patch_info.inactivity_time <= 2419200):
+                patches_by_it['4 weeks'] += 1
+                continue
+            if (patch_info.inactivity_time <= 4838400):
+                patches_by_it['8 weeks'] += 1
+                continue
+            else:
+                patches_by_it['more than 8 weeks'] += 1
+
+        ds_patches_info = ''
+        for time, patches in patches_by_it.iteritems():
+            ds_patches_info = ds_patches_info + '{ time: "%s", patches: %d}, ' \
+                              % (time, patches)
+
+        return '[ ' + ds_patches_info + ' ];'
 
 class PersonInfo(object):
     def __init__(self, person):
@@ -467,12 +527,14 @@ def date_range(start, end, delta):
     return [start+timedelta(days=i) for i in range(r)]
 
 def date_diff(second_diff):
- 
+
     if second_diff < 60:
         return  "%0.2f seconds" % second_diff
     if second_diff < 3600:
         return "%0.2f minutes" % (second_diff / 60)
     if second_diff < 86400:
         return "%0.2f hours" % (second_diff / 3600)
+    if second_diff < 604800:
+        return "%0.2f days" % (second_diff / 86400)
     else:
-        return "%0.2f days" % (second_diff / 604800)
+        return "%0.2f weeks" % (second_diff / 604800)

@@ -106,4 +106,7 @@ def patches(request, project_id):
     context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
     context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
     
+    context['ds_patches_by_rt'] = patch_group_metrics.get_patches_by_response_time()
+    context['ds_patches_by_it'] = patch_group_metrics.get_patches_by_inactivity_time()
+
     return render_to_response('patchwork/patch-stats.html', context)
