@@ -17,7 +17,7 @@
 # along with Patchwork; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
-from patchwork.models import Patch, PatchMetrics, Project, Person, Comment
+from patchwork.models import Patch, PatchMetrics, Project, Person, Comment, State
 from datetime import datetime, timedelta
 from chardet.constants import True
 
@@ -300,6 +300,25 @@ class PatchGroupMetrics(object):
                           % (date.strftime('%m/%d/%Y'), opened_patches_dataset[idx], \
                              closed_patches_dataset[idx], created_patches_dataset[idx])
         return '[ ' + ds_daily_backlog + ' ];'
+
+    def get_patches_by_state(self):
+
+        patches_by_state = {}
+
+        states = State.objects.all()
+        for state in states:
+            patches_by_state[state.name] = 0
+
+        for patch_info in self.patches_info:
+            patches_by_state[patch_info.patch.state.name] += 1
+
+        ds_patches_info = ''
+        for state, patches in patches_by_state.iteritems():
+            ds_patches_info = ds_patches_info + '{ state: "%s", patches: %d}, ' \
+                              % (state, patches)
+
+        return '[ ' + ds_patches_info + ' ];'
+
 
 class PersonInfo(object):
     def __init__(self, person):

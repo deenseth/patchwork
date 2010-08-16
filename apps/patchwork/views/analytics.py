@@ -61,6 +61,8 @@ def dashboard(request, project_id):
     context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
     context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
 
+    context['ds_patches_by_state'] = patch_group_metrics.get_patches_by_state()
+
     today = datetime.now()
     # get daily backlog history
     last_day = datetime(today.year, today.month, today.day)

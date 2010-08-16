@@ -44,6 +44,29 @@
  </tr>
 </table>
 
+<h2>Patches by State</h2>
+<div id="patches_by_state" style="width: 640px; height: 480px;"></div>
+
+  <script type = "text/javascript">
+  //--- data
+  var patches_by_state = {{ds_patches_by_state|safe}}
+
+  var ds = new YAHOO.util.DataSource(patches_by_state);
+  ds.responseType = YAHOO.util.DataSource.TYPE_JSARRAY;
+  ds.responseSchema = { fields: [ "state", "patches" ] };
+
+  //--- chart
+  var mychart = new YAHOO.widget.PieChart( "patches_by_state", ds,
+  {
+      dataField: "patches",
+      categoryField: "state",
+      style: {legend: {display: "right"}},
+      series: [{}]
+  });
+
+  </script>
+</div>
+
 <div>
   <h2>Patches Statistics:</h2>
   <table style="width: 800px" class="horizontal">
