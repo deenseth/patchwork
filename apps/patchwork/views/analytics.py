@@ -58,9 +58,6 @@ def dashboard(request, project_id):
     # Populate group metrics statistics
     patch_group_metrics = PatchGroupMetrics(patches)
 
-    context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
-    context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
-
     context['ds_patches_by_state'] = patch_group_metrics.get_patches_by_state()
 
     today = datetime.now()
@@ -95,3 +92,18 @@ def contributors(request, project_id):
 
     return render_to_response('patchwork/contributors.html', context)
 
+def patches(request, project_id):
+    context = PatchworkRequestContext(request)
+    project = get_object_or_404(Project, linkname = project_id)
+    context.project = project
+
+    # Get list of patch for the current project
+    patches = Patch.objects.filter(project=project)
+
+    # Populate group metrics statistics
+    patch_group_metrics = PatchGroupMetrics(patches)
+
+    context['patch_duration_stats'] = patch_group_metrics.get_duration_metrics_stats()
+    context['patch_frequency_stats'] = patch_group_metrics.get_frequency_metrics_stats()
+    
+    return render_to_response('patchwork/patch-stats.html', context)

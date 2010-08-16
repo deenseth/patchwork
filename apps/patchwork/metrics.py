@@ -121,12 +121,24 @@ class PatchGroupMetrics(object):
 
         data = [patch_info.response_time for patch_info in self.patches_info]
         stats = DescriptiveStats(data)
-        return stats
+        pretty_stats = {'avg':date_diff(stats.avg()),
+                        'median':date_diff(stats.median()),
+                        'max':date_diff(stats.max()),
+                        'min':date_diff(stats.min()),
+                        'stdev':date_diff(stats.stdev())
+                        }
+        return pretty_stats
 
     def get_inactivity_time_stats(self):
         data = [patch_info.inactivity_time for patch_info in self.patches_info]
         stats = DescriptiveStats(data)
-        return stats
+        pretty_stats = {'avg':date_diff(stats.avg()),
+                        'median':date_diff(stats.median()),
+                        'max':date_diff(stats.max()),
+                        'min':date_diff(stats.min()),
+                        'stdev':date_diff(stats.stdev())
+                        }
+        return pretty_stats
 
     def get_patches_created_during(self, start_date, end_date):
 
@@ -453,3 +465,14 @@ class DescriptiveStats(object):
 def date_range(start, end, delta):
     r = (end + delta - start).days
     return [start+timedelta(days=i) for i in range(r)]
+
+def date_diff(second_diff):
+ 
+    if second_diff < 60:
+        return  "%0.2f seconds" % second_diff
+    if second_diff < 3600:
+        return "%0.2f minutes" % (second_diff / 60)
+    if second_diff < 86400:
+        return "%0.2f hours" % (second_diff / 3600)
+    else:
+        return "%0.2f days" % (second_diff / 604800)

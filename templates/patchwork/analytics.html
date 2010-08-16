@@ -45,6 +45,7 @@
 </table>
 
 <h2>Patches by State</h2>
+<a href="{% url patchwork.views.analytics.patches project_id=project.linkname %}">Patch Charts</a>
 <div id="patches_by_state" style="width: 640px; height: 480px;"></div>
 
   <script type = "text/javascript">
@@ -65,46 +66,6 @@
   });
 
   </script>
-</div>
-
-<div>
-  <h2>Patches Statistics:</h2>
-  <table style="width: 800px" class="horizontal">
-    <thead>
-      <tr>
-        <th style="width: 357px" class="style1">Metrics</th>
-        <th style="width: 219px">Mean</th>
-        <th style="width: 219px">Median</th>
-        <th style="width: 91px">Max</th>
-        <th style="width: 90px">Min</th>
-        <th style="width: 90px">Std. Dev.</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for metric, stats in patch_duration_stats.items %}
-      <tr class="statistics">
-        <th style="width: 357px" class="style1">{{metric}}</th>
-        <th style="width: 100px">{{stats.avg}}</th>
-        <th style="width: 100px">{{stats.median}}</th>
-        <th style="width: 91px">{{stats.max}}</th>
-        <th style="width: 90px">{{stats.min}}</th>
-        <th style="width: 90px">{{stats.stdev}}</th>
-      </tr>
-      {% endfor %}
-    </tbody>
-    <tbody>
-      {% for metric, stats in patch_frequency_stats.items %}
-      <tr class="statistics">
-        <th style="width: 357px" class="style1">{{metric}}</th>
-        <th style="width: 100px">{{stats.avg}}</th>
-        <th style="width: 100px">{{stats.median}}</th>
-        <th style="width: 91px">{{stats.max}}</th>
-        <th style="width: 90px">{{stats.min}}</th>
-        <th style="width: 90px">{{stats.stdev}}</th>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
 </div>
 
 <h2>Daily Backlog</h2>
@@ -132,6 +93,7 @@
 </div>
 
 <h2>Contributors</h2>
+<a href="{% url patchwork.views.analytics.contributors project_id=project.linkname %}">Contributor Charts</a>
 <div id="contributors_patchs" style="width: 1024px; height: 768px;"></div>
 
   <script type = "text/javascript">
@@ -157,9 +119,6 @@
 
 <a href="{% url patchwork.views.help "pwclient/" %}">patchwork
 client</a>
-
-<a href="{% url patchwork.views.analytics.contributors project_id=project.linkname %}">Contributor Charts</a>
-
 {% if settings.ENABLE_XMLRPC %}
 <p>Sample <a href="{% url patchwork.views.help "pwclient/" %}">patchwork
 client</a> configuration for this project: <a
